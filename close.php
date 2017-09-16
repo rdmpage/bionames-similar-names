@@ -15,15 +15,122 @@ require_once (dirname(__FILE__) . '/lcs.php');
 require_once (dirname(__FILE__) . '/components.php');
 require_once (dirname(__FILE__) . '/fingerprint.php');
 
+//--------------------------------------------------------------------------------------------------
+function compare_taxon_names($v1, $v2)
+{
+	$d = levenshtein($v1[0], $v2[0]);
+	
+	return $d;
+}
+
 
 //--------------------------------------------------------------------------------------------------
-// Find components based on string similarity
-function find_clusters($strings, $threshold = 0.8)
+// Compare taxon author strings and return same/not same
+function compare_authors($v1, $v2, $threshold = 0.8)
+{				
+	$same = false;
+	
+	// Find longest common subsequence for this pair of cleaned names
+	$lcs = new LongestCommonSequence($v1, $v2);	
+	$d = $lcs->score();
+
+	//echo "$v1 $v2 $d\n";
+
+	// Filter by longest common substring (to ensure we have a "meaningful" 
+	// match), that is, so that we avoid subsequences that have little continuity					
+	$str = '';
+	$lcstr = LongestCommonSubstring($v1, $v2, $str);
+	if ($lcstr >= 4)
+	{
+		// Ignore matches just on date, we want more than that
+		if (is_numeric(trim($str)))
+		{
+		}
+		else
+		{
+			// If longest common subsequence is > $threshold of the length of both strings
+			// we accept it.
+			if (($d / strlen($v1) >= $threshold) || ($d / strlen($v2) >= $threshold))
+			{
+				$same = true;
+			}
+		}
+	}
+	else
+	{
+		// If just a short match is it the start if the string (e.g., an abbreviation)
+		$abbreviation = false;
+		if (strlen($v1) == $d)
+		{
+			if (strpos($v2, $v1, 0) === false)
+			{
+			}
+			else
+			{
+				$abbreviation = true;
+			}
+		}
+		else
+		{
+			if (strpos($v1, $v2, 0) === false)
+			{
+			}
+			else
+			{
+				$abbreviation = true;
+			}						
+		}
+	
+		// Handle contractions e.g. "Blgr." and "Boulenger 1904"
+		if (!$abbreviation)
+		{
+			$c1 = $v1;
+			$c1 = preg_replace('/[a|e|i|o|u]+/', '', $c1);
+		
+			$c2 = $v2;
+			$c2 = preg_replace('/[a|e|i|o|u]+/', '', $c2);
+		
+			// clean dates
+			if (
+				preg_match('/([0-9]{4})\)?$/', $c1)
+				|| preg_match('/([0-9]{4})\)?$/', $c2)
+				)
+			{
+				$c1 = preg_replace('/([0-9]{4})\)?$/', '', $c1);
+				$c1 = preg_replace('/^\(/', '', $c1);
+
+				$c2 = preg_replace('/([0-9]{4})\)?$/', '', $c2);
+				$c2 = preg_replace('/^\(/', '', $c2);
+
+			}
+		
+			$lcs_stripped = new LongestCommonSequence($c1, $c2);	
+			$d = $lcs_stripped->score();
+		
+			if (
+				(strlen($c1) == $d)
+				|| (strlen($c2) == $d)
+				)
+			{
+				$abbreviation = true;
+			}
+		
+			//echo "$c1 $c2 $d\n";
+		}
+	
+		$same = $abbreviation;
+	}
+
+	return $same;
+}
+	
+
+//--------------------------------------------------------------------------------------------------
+// Find components based on simple string similarity
+function find_clusters_edit_dist($strings, $threshold = 1)
 {
 	$n = count($strings);
-	
-	//print_r($strings);
-	
+		
 	$map = array();
 	$inverse_map = array();
 	
@@ -51,11 +158,11 @@ function find_clusters($strings, $threshold = 0.8)
 	$nodes = '';
 	$edges = '';
 	
-	// Compare names using approximate string matching
+	// Compare names using string edit
 	$i = 0;
 	foreach ($strings as $k1 => $v1)
 	{
-		$nodes .= $k1 . " [label=\"" . $v1 . "\"];\n";
+		$nodes .= $k1 . " [label=\"" . join(' ', $v1) . "\"];\n";
 		
 		if ($i < $n-1)
 		{
@@ -64,124 +171,21 @@ function find_clusters($strings, $threshold = 0.8)
 			{
 				if (($j > $i) && ($j < $n))
 				{
-					if (($v1 == '') || ($v2 == ''))
+					$d = compare_taxon_names($v1, $v2);
+					
+					if ($d <= $threshold)
 					{
-						// skip blank names
-						if (($v1 == '') && ($v2 == ''))
+						// sanity check, if we have authors are they the same?
+						if (1)
 						{
-							$X[$map[$k1]][$map[$k2]] = 1;
-							$X[$map[$k2]][$map[$k1]] = 1;	
-							//$edges .=  $i . " -- " . $j . " [label=\"" . $lcstr . "\"];\n";
-							$edges .=  $inverse_map[$i] . " -- " . $inverse_map[$j] . " [label=\"blank\"];\n";
-						}						
-						
-						
-					}
-					else
-					{				
-						// Find longest common subsequence for this pair of cleaned names
-						$lcs = new LongestCommonSequence($v1, $v2);	
-						$d = $lcs->score();
-						
-						//echo "$v1 $v2 $d\n";
-	
-						// Filter by longest common substring (to ensure we have a "meaningful" 
-						// match), that is, so that we avoid subsequences that have little continuity					
-						$str = '';
-						$lcstr = LongestCommonSubstring($v1, $v2, $str);
-						if ($lcstr >= 4)
-						{
-							// Ignore matches just on date, we want more than that
-							if (is_numeric(trim($str)))
-							{
-							}
-							else
-							{
-								// If longest common subsequence is > $threshold of the length of both strings
-								// we accept it.
-								if (($d / strlen($v1) >= $threshold) || ($d / strlen($v2) >= $threshold))
-								{
-									$X[$map[$k1]][$map[$k2]] = 1;
-									$X[$map[$k2]][$map[$k1]] = 1;	
-									//$edges .=  $i . " -- " . $j . " [label=\"" . $lcstr . "\"];\n";
-									$edges .=  $inverse_map[$i] . " -- " . $inverse_map[$j] . " [label=\"" . $lcstr . "\"];\n";
-							
-								}
-							}
+					
+					
 						}
-						else
-						{
-							// If just a short match is it the start if the string (e.g., an abbreviation)
-							$abbreviation = false;
-							if (strlen($v1) == $d)
-							{
-								if (strpos($v2, $v1, 0) === false)
-								{
-								}
-								else
-								{
-									$abbreviation = true;
-								}
-							}
-							else
-							{
-								if (strpos($v1, $v2, 0) === false)
-								{
-								}
-								else
-								{
-									$abbreviation = true;
-								}						
-							}
-							
-							// Handle contractions e.g. "Blgr." and "Boulenger 1904"
-							if (!$abbreviation)
-							{
-								$c1 = $v1;
-								$c1 = preg_replace('/[a|e|i|o|u]+/', '', $c1);
-								
-								$c2 = $v2;
-								$c2 = preg_replace('/[a|e|i|o|u]+/', '', $c2);
-								
-								// clean dates
-								if (
-									preg_match('/([0-9]{4})\)?$/', $c1)
-									|| preg_match('/([0-9]{4})\)?$/', $c2)
-									)
-								{
-									$c1 = preg_replace('/([0-9]{4})\)?$/', '', $c1);
-									$c1 = preg_replace('/^\(/', '', $c1);
-
-									$c2 = preg_replace('/([0-9]{4})\)?$/', '', $c2);
-									$c2 = preg_replace('/^\(/', '', $c2);
-		
-								}
-								
-								$lcs_stripped = new LongestCommonSequence($c1, $c2);	
-								$d = $lcs_stripped->score();
-								
-								if (
-									(strlen($c1) == $d)
-									|| (strlen($c2) == $d)
-									)
-								{
-									$abbreviation = true;
-								}
-								
-								//echo "$c1 $c2 $d\n";
-							}
-							
-							
-							// Accept abbreviation
-							if ($abbreviation)
-							{
-								$X[$map[$k1]][$map[$k2]] = 1;
-								$X[$map[$k2]][$map[$k1]] = 1;	
-	//							$edges .=  $i . " -- " . $j . " [label=\"" . $lcstr . "\"];\n";						
-								$edges .=  $inverse_map[$i] . " -- " . $inverse_map[$j] . " [label=\"" . $lcstr . "\"];\n";
-							}
-						}
-					}
+					
+						$X[$map[$k1]][$map[$k2]] = 1;
+						$X[$map[$k2]][$map[$k1]] = 1;	
+						$edges .=  $inverse_map[$i] . " -- " . $inverse_map[$j] . " [label=\"" . $d . "\"];\n";
+					}					
 				}
 				$j++;
 			}
@@ -223,6 +227,9 @@ function find_clusters($strings, $threshold = 0.8)
 }
 
 
+				
+
+
 //--------------------------------------------------------------------------------------------------
 $db = NewADOConnection('mysql');
 $db->Connect("localhost", 
@@ -237,12 +244,26 @@ $result = $db->Execute('SET tmp_table_size = 1024 * 1024 * 1024');
 // Get names
 
 $original_clusters = array();
+$updated_clusters = array();
+
 
 {
 	{
 		//$name = 'Pempheris schomburgki%';
 		
 		$name = 'Sphodros abbot%';
+		
+		$name = 'Tachymarptis %';
+		
+		$name = 'Panyptila cay%';
+		
+		$name = 'Agathidium ph%';
+		$name = 'Hemigrapsus o%';
+		$name = 'Diomedea chloror%';
+		$name = 'Pterodroma l%';
+		
+		$name = 'Rousettus l%';
+		//$name = 'Rousettus s%';
 
 		
 		$sql = 'SELECT * FROM names WHERE `nameComplete` LIKE ' . $db->qstr($name); // . ' AND taxonAuthor IS NOT NULL AND taxonAuthor <>""';
@@ -254,15 +275,24 @@ $original_clusters = array();
 
 		$strings = array();
 		$names = array();
-
-
 		
 		$result = $db->Execute($sql);
 		if ($result == false) die("failed [" . __FILE__ . ":" . __LINE__ . "]: " . $sql);
 		
 		while (!$result->EOF) 
 		{	
-			$strings[$result->fields['id']] = finger_print($result->fields['taxonAuthor']);
+			$str = '';
+
+			// taxon name			
+			$str = $result->fields['nameComplete'];
+			$strings[$result->fields['id']][] = finger_print($str);
+			
+			// authorship
+			if ($result->fields['taxonAuthor'] != '')
+			{
+				$str = finger_print($result->fields['taxonAuthor']);
+				$strings[$result->fields['id']][] = $str;
+			}			
 			
 			$name = new stdclass;
 			$name->id = $result->fields['id'];
@@ -290,12 +320,17 @@ $original_clusters = array();
 		}
 		
 		print_r($names);
+		print_r($strings);
+		
+		//exit();
 		
 		$n = $result->NumRows();
 			
 		
 		// Cluster
-		$components = find_clusters($strings);
+		//$components = find_clusters($strings, 0.9);
+		
+		$components = find_clusters_edit_dist($strings);
 		
 		//print_r($components);
 		
@@ -373,6 +408,8 @@ $original_clusters = array();
 			foreach ($c as $id)
 			{
 				echo 'UPDATE names SET cluster_id="' . $c[0] . '" WHERE `id`="' . $id . '";' . "\n";
+				
+				$updated_clusters[] = $c[0];
 
 				$key = array_search($c[0], $original_clusters);
 				if ($key === false)
@@ -386,6 +423,14 @@ $original_clusters = array();
 		}
 	}
 }
+
+$updated_clusters = array_unique($updated_clusters);
+
+echo "-- clusters to update\n";
+echo "\$ids=array(\n";
+echo join(",\n", $updated_clusters);
+echo "\n);\n";
+
 
 echo "-- clusters to delete\n";
 echo "\$ids=array(\n";

@@ -1,0 +1,32 @@
+graph G {
+873085 [label="pterodroma lessonii"];
+5156020 [label="pterodroma lesson"];
+5090059 [label="pterodroma leucoplera hypoleuca"];
+4520747 [label="pterodroma lecuoptera leucoptera"];
+4520746 [label="pterodroma lecuoptera caledonica"];
+4271801 [label="pterodroma lugens"];
+40228 [label="pterodroma leucoptera caledonica"];
+397795 [label="pterodroma leucoptera brevipes"];
+333391 [label="pterodroma lessoni"];
+3151536 [label="pterodroma leucoptera masafuerae"];
+3082944 [label="pterodroma l leucoptera"];
+3060302 [label="pterodroma lugens"];
+284426 [label="pterodroma leucoptera leucoptera"];
+284425 [label="pterodroma leucoptera caledonica"];
+2342300 [label="pterodroma longirostris pycrofti"];
+2269628 [label="pterodroma leucoptera hypoleuca"];
+1819335 [label="pterodroma leucoptera caledonica"];
+1819334 [label="pterodroma leucoptera caledonica"];
+160190 [label="pterodroma longirostris"];
+12212 [label="pterodroma leucoptera"];
+873085 -- 333391 [label="1"];
+5156020 -- 333391 [label="1"];
+5090059 -- 2269628 [label="1"];
+4271801 -- 3060302 [label="0"];
+40228 -- 284425 [label="0"];
+40228 -- 1819335 [label="0"];
+40228 -- 1819334 [label="0"];
+284425 -- 1819335 [label="0"];
+284425 -- 1819334 [label="0"];
+1819335 -- 1819334 [label="0"];
+}

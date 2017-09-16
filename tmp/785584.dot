@@ -1,0 +1,14 @@
+graph G {
+785584 [label="rousettus spinalatus hill bergmans 1980"];
+3474821 [label="rousettus shortridgei"];
+3273061 [label="rousettus slresemanni stein 1933"];
+2539380 [label="rousettus smithi"];
+2319439 [label="rousettus seminudus gray 1870"];
+227113 [label="rousettus stresemanni stein 1933"];
+2030497 [label="rousettus stresemanni"];
+155605 [label="rousettus spinalatus bergmans hill 1980"];
+785584 -- 155605 [label="0"];
+3273061 -- 227113 [label="1"];
+3273061 -- 2030497 [label="1"];
+227113 -- 2030497 [label="0"];
+}

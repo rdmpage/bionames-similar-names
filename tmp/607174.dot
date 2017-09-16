@@ -1,0 +1,23 @@
+graph G {
+607174 [label="diomedea chlororhynchos chlororhynchos"];
+5090054 [label="diomedea chlororkynchos"];
+4983329 [label="diomedea chlororhynchos"];
+2254155 [label="diomedea chlororhyncha"];
+160354 [label="diomedea chlororhynchos"];
+13209 [label="diomedea chlororhynchos"];
+1170582 [label="diomedea chlororhynchus"];
+1071339 [label="diomedea chlororynchos"];
+5090054 -- 4983329 [label="1"];
+5090054 -- 160354 [label="1"];
+5090054 -- 13209 [label="1"];
+5090054 -- 1071339 [label="1"];
+4983329 -- 160354 [label="0"];
+4983329 -- 13209 [label="0"];
+4983329 -- 1170582 [label="1"];
+4983329 -- 1071339 [label="1"];
+160354 -- 13209 [label="0"];
+160354 -- 1170582 [label="1"];
+160354 -- 1071339 [label="1"];
+13209 -- 1170582 [label="1"];
+13209 -- 1071339 [label="1"];
+}

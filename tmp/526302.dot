@@ -1,0 +1,5 @@
+graph G {
+526302 [label="agathidium phulcokiense"];
+274507 [label="agathidium phulchokiense"];
+526302 -- 274507 [label="1"];
+}

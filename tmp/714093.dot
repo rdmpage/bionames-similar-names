@@ -1,0 +1,11 @@
+graph G {
+714093 [label="hemigrapsus oregonesis"];
+613447 [label="hemigrapsus oregonenesis"];
+33121 [label="hemigrapsus oregonensis"];
+1367200 [label="hemigrapsus oregonensis"];
+714093 -- 33121 [label="1"];
+714093 -- 1367200 [label="1"];
+613447 -- 33121 [label="1"];
+613447 -- 1367200 [label="1"];
+33121 -- 1367200 [label="0"];
+}

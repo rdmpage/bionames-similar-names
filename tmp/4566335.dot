@@ -1,0 +1,17 @@
+graph G {
+4566335 [label="panyptila cayennensis"];
+3886414 [label="panyptila cayanensis"];
+3733937 [label="panyptila cayanensis"];
+3198972 [label="panyptila cayenensis"];
+2992576 [label="panyptila cayenniensis"];
+2953067 [label="panyptila cayennensis veraecrucis"];
+1733144 [label="panyptila cayennensis"];
+4566335 -- 3198972 [label="1"];
+4566335 -- 2992576 [label="1"];
+4566335 -- 1733144 [label="0"];
+3886414 -- 3733937 [label="0"];
+3886414 -- 3198972 [label="1"];
+3733937 -- 3198972 [label="1"];
+3198972 -- 1733144 [label="1"];
+2992576 -- 1733144 [label="1"];
+}

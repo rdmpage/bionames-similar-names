@@ -20,6 +20,21 @@ $config['db_user'] 	    = 'root';
 $config['db_passwd'] 	= '';
 $config['db_name'] 	    = 'ion';
 
+// BioNames
+$config['couchdb_options'] = array(
+		'database' => 'bionames',
+		'host' => 'rdmpage:peacrab@direct.bionames.org',
+		'port' => 5984
+		);
+
+// HTTP proxy
+if ($config['proxy_name'] != '')
+{
+	if ($config['couchdb_options']['host'] != 'localhost')
+	{
+		$config['couchdb_options']['proxy'] = $config['proxy_name'] . ':' . $config['proxy_port'];
+	}
+}
 
 
 ?>

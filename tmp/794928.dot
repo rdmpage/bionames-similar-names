@@ -1,0 +1,12 @@
+graph G {
+794928 [label="pterodroma phaeopygia phaeopygia"];
+72984 [label="pterodroma phaeopygia sandwichensis"];
+713286 [label="pterodroma phaeopygia sandwicensis"];
+538047 [label="pterodroma pycrofti"];
+3289463 [label="pterodroma parvirostris"];
+3059901 [label="pterodroma p puflinus"];
+3059428 [label="pterodroma pacificus"];
+2420184 [label="pterodroma parkinsoni"];
+21715 [label="pterodroma phaeopygia"];
+72984 -- 713286 [label="1"];
+}
